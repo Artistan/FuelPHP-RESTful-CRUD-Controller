@@ -10,15 +10,8 @@ FuelPHP).
 
 GET requests can invoke one of three methods.
 
-* When one or more arguments are specified, it will invoke `get(...)`.
-* When no arguments are specified, it will invoke `get_list($page)` (falling back to `get(...)`). Page is
-  automatically populated from the "page" GET paramater (defaulting to 0) if you want to use pagination.
+* When one or more arguments are specified, it will try to invoke `{Input::method}_{resource1}`.
+* Otherwise it will invode {Input::method}_index();
+* When no arguments are specified, it will try to invoke `get_list($page)` (falling back to `get(...)` or get_index).
 * When the search GET paramater is populated, it will invoke `get_search($query, $page)`, falling back
-  to `get_list($page)`, and finally `get(...)`.
-
-Routes
-======
-To invoke get_list with a non-default return format, you need to add a slash after the controller name.
-(e.g. /controllername/.json). To remove this requirement (e.g. enable /controllername.json), add this route:
-
-    '(:alnum).(:alpha)' => '$1/.$2',
+  to `get_list($page)`, and finally `get(...)` or get_index.
