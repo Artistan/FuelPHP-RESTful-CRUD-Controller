@@ -42,27 +42,31 @@ abstract class Controller_Rest_Crud extends \Controller_Rest
         if(\Config::get('rest.auth') == '' or $valid_login)
         {
             // Go to $this->method(), unless there are no args and it's a GET, in which case, go to $this->get_list();
-            $controller_method = strtolower(\Input::method());
+			
+			// default to {method}_index for restful service!
+            $controller_method = strtolower(\Input::method()).'_index';
+            $default_method = strtolower(\Input::method()).'_'.$resource;
             if(\Input::method() == "GET" && $resource == ""){
 
                 // Add the page/search variables to the method where necessary
-                $page = Input::get("page", 0);
                 $search = Input::get("search", FALSE);
 
                 if($search !== FALSE && method_exists($this, "get_search")){
                     $controller_method = "get_search";
 
                     array_push($arguments, $search);
-                    array_push($arguments, $page);
                 }else if(method_exists($this, "get_list")){
                     $controller_method = "get_list";
-
-                    array_push($arguments, $page);
                 }
             }
 
-            // If method is not available, set status code to 404
-            if (method_exists($this, $controller_method))
+            // check to see if default {Input::method()}_{resource} method exists
+            if (method_exists($this, $default_method))
+            {
+                call_user_func_array(array($this, $default_method), $arguments);
+            }
+            // check to see controller method exists
+            else if (method_exists($this, $controller_method))
             {
                 call_user_func_array(array($this, $controller_method), $arguments);
             }
