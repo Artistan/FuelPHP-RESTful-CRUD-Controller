@@ -104,6 +104,14 @@ abstract class Controller_Rest_Crud extends \Controller_Rest
 
     public function router($resource, array $arguments){
         array_unshift($arguments, $resource);
+        
+	// This checks to see if the word "index" is in the uri string and if it isn't , drop it if it's in the arguements, cause that's been happening
+	$uriArr = explode('/' ,Request::active()->uri->string());
+	if( ($uriArr[(count($uriArr) - 1)] != 'index') && ($arguments[0] == 'index') ){
+		//pop it out if it's not in the uri and it's coming through as an arguement
+		array_pop($arguments);
+	}
+		
         \Config::load('rest', true);
 
         $pattern = '/\.(' . implode('|', array_keys($this->_supported_formats)) . ')$/';
