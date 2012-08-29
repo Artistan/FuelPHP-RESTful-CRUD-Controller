@@ -3,6 +3,105 @@
 
 abstract class Controller_Rest_Crud extends \Controller_Rest
 {
+	/**
+	 * Abstract default get function
+	 *
+	 * @param INT $id ID of the element you want to get
+	 *
+	 * @return None
+	 * @example
+	 *  /rest/example/ OR /rest/example/32 OR rest/example/?foo=bar
+	 * /example
+	 */
+    abstract public function get_index($id='');
+
+	/**
+	 * Abstract default post function
+	 *
+	 * @return None
+	 * @example
+	 *   POST to /rest/example/
+	 * /example
+	 */
+    abstract public function post_index();
+
+	/**
+	 * Abstract default put function
+	 *
+	 * @param INT $id ID of the element you want to update, required
+	 *
+	 * @return None
+	 * @example
+	 *   PUT to /rest/example/32
+	 * /example
+	 */
+    abstract public function put_index($id);
+
+	/**
+	 * Abstract default delete function
+	 *
+	 * @param INT $id ID of the element you want to delete, required
+	 *
+	 * @return None
+	 * @example
+	 *   DELETE to /rest/example/32
+	 * /example
+	 */
+    abstract public function delete_index($id);
+
+	/**
+	 * Wrapper for response(), allows us to have a
+	 * standard format for the response
+	 *
+	 * @param BOOL   $success whether the request was successful or not
+	 * @param STRING $message string message to go with status
+	 * @param INT    $total   the total number of results found
+	 * @param MIXED  $data    The raw data
+	 *
+	 * @return None
+	 * @example
+	 *   $this->detailed_response(true,'Example Message',20,array('foo'=>'bar'));
+	 * OR
+	 *   $this->detailed_response(false,'Example Error',0,'');
+	 * /example
+	 */
+	protected function detailed_response($success,$message,$total,$data)
+	{
+		$response = array();
+		$response['success'] = $success;
+		$response['message'] = $message;
+		$response['total']   = $total;
+		$response['data']    = $data;
+		$this->response($response);
+	}
+
+	/**
+	 * Helper function for getting OFFSET
+	 *
+	 * @return INT    the offset that should be started at
+	 * @example
+	 *   $this->page();
+	 * /example
+	 */
+	protected function page()
+	{
+		return (\Input::get("page",1) -1) * $this->perpage();
+	}
+
+	/**
+	 * Helper function get getting LIMIT
+	 *
+	 * @return INT    the limit that should be used
+	 * @example
+	 *  $this->perpage();
+	 * /example
+	 */
+	protected function perpage()
+	{
+		return \Input::get("limit",20);
+	}
+
+
     public function router($resource, array $arguments){
         array_unshift($arguments, $resource);
         \Config::load('rest', true);
@@ -42,7 +141,7 @@ abstract class Controller_Rest_Crud extends \Controller_Rest
         if(\Config::get('rest.auth') == '' or $valid_login)
         {
             // Go to $this->method(), unless there are no args and it's a GET, in which case, go to $this->get_list();
-			
+
 			// default to {method}_index for restful service!
             $controller_method = strtolower(\Input::method()).'_index';
             $default_method = strtolower(\Input::method()).'_'.$resource;
@@ -81,5 +180,6 @@ abstract class Controller_Rest_Crud extends \Controller_Rest
             $this->response(array('status'=>0, 'error'=> 'Not Authorized'), 401);
         }
     }
+
 }
 ?>
